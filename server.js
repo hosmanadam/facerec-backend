@@ -28,7 +28,7 @@ app.post('/signin', (req, res) => {
       bcrypt.compareSync(password, database.users[email].password)) {
     res.json(database.users[email]);
   } else {
-    res.status(400).json('Nice try');
+    res.status(401).json('Nice try');
   }
 });
 
@@ -36,7 +36,7 @@ app.post('/signin', (req, res) => {
 app.post('/register', (req, res) => {
   let {name, email, password} = req.body;
   if (database.users.hasOwnProperty(email)) {
-    res.json('Email-already in database')
+    res.status(409).json('Email-already in database')
   } else {
     let hash = bcrypt.hashSync(password);
     database.users[email] = {
