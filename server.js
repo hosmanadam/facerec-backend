@@ -1,6 +1,8 @@
 const express = require('express');
 const { database } = require('./database');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt-nodejs');
+
 
 const app = express();
 
@@ -16,7 +18,7 @@ app.get('/', (req, res) => {
 app.post('/signin', (req, res) => {
   let {email, password} = req.body;
   if (database.users.hasOwnProperty(email) &&
-      password === database.users[email].password) {
+      bcrypt.compareSync(password, database.users[email].password)) {
     res.json(database.users[email]);
   } else {
     res.status(400).json('Nice try');
@@ -29,11 +31,12 @@ app.post('/register', (req, res) => {
   if (database.users.hasOwnProperty(email)) {
     res.json('Email-already in database')
   } else {
+    let hash = bcrypt.hashSync(password);
     database.users[email] = {
       id: Object.keys(database.users).length + 1,
       name: name,
       email: email,
-      password: password,
+      password: hash,
       entries: 0,
       joined: new Date(),
     };
