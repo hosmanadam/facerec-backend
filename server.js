@@ -22,20 +22,15 @@ app.use(cors());
 app.use(bodyParser.json());
 
 
-app.get('/', (req, res) =>
-    controllers.handleIndexGet(req, res));
+app.get('/', controllers.handleIndexGet());
 
-app.post('/signin', (req, res) =>
-    controllers.handleSignInPost(req, res, knex, bcrypt));
+app.post('/signin', controllers.handleSignInPost(knex, bcrypt));
 
-app.post('/register', (req, res) =>
-    controllers.handleRegisterPost(req, res, knex, bcrypt));
+app.post('/register', controllers.handleRegisterPost(knex, bcrypt));
 
-app.get('/profile/:userId', (req, res) =>
-    controllers.handleProfileGet(req, res, knex));
+app.get('/profile/:userId', controllers.handleProfileGet(knex));
 
-app.put('/image', (req, res) =>
-    controllers.handleImagePut(req, res, knex));
+app.put('/image', controllers.handleImagePut(knex));
 
 
 

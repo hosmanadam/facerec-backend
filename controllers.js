@@ -1,9 +1,9 @@
-const handleIndexGet = (req, res) => {
+const handleIndexGet = () => (req, res) => {
   res.send('A-OK');
 };
 
 
-const handleSignInPost = (req, res, knex, bcrypt) => {
+const handleSignInPost = (knex, bcrypt) => (req, res) => {
   let {email, password} = req.body;
   return knex.select('*')
       .from('login')
@@ -23,7 +23,7 @@ const handleSignInPost = (req, res, knex, bcrypt) => {
       };
 
 
-const handleRegisterPost = (req, res, knex, bcrypt) => {
+const handleRegisterPost = (knex, bcrypt) => (req, res) => {
   let {name, email, password} = req.body;
   let hash = bcrypt.hashSync(password);
   return knex.transaction(trx => {
@@ -43,7 +43,7 @@ const handleRegisterPost = (req, res, knex, bcrypt) => {
 };
 
 
-const handleProfileGet = (req, res, knex) => {
+const handleProfileGet = (knex) => (req, res) => {
   return knex('users')
       .select('*')
       .where({id: req.params.userId})
@@ -57,7 +57,7 @@ const handleProfileGet = (req, res, knex) => {
 };
 
 
-const handleImagePut = (req, res, knex) => {
+const handleImagePut = (knex) => (req, res) => {
   let {id} = req.body;
   return knex.transaction((trx) => {
     return trx('users')
