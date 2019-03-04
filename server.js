@@ -2,6 +2,15 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt-nodejs');
 const cors = require('cors');
+const knex = require('knex')({
+  client: 'pg',
+  connection: {
+    host : 'localhost',
+    user : 'adamhosman',
+    password : '',
+    database : 'facerec'
+  }
+});
 
 
 const app = express();
@@ -20,54 +29,75 @@ app.get('/', (req, res) => {
 
 app.post('/signin', (req, res) => {
   let {email, password} = req.body;
-  if (database.users.hasOwnProperty(email) &&
-      bcrypt.compareSync(password, database.users[email].password)) {
-    res.json(database.users[email]);
-  } else {
-    res.status(401).json('Nice try');
-  }
-});
+  return knex.select('*')
+      .from('login')
+      .join('users', 'login.email', 'users.email')
+      .where('users.email', '=', email)
+      .then(usersWithHashes => {
+        let user = usersWithHashes[0];
+        let hash = user.hash;
+        if (hash && bcrypt.compareSync(password, hash)) {
+          return user;
+        } else {
+          throw new Error('Wrong username or password');
+        }
+      })
+      .then(user => res.json(user))
+      .catch(err => res.status(401).json(err.message))
+      });
 
 
 app.post('/register', (req, res) => {
   let {name, email, password} = req.body;
-  if (database.users.hasOwnProperty(email)) {
-    res.status(409).json('Email-already in database')
-  } else {
-    let hash = bcrypt.hashSync(password);
-    database.users[email] = {
-      id: Object.keys(database.users).length + 1,
-      name: name,
-      email: email,
-      password: hash,
-      entries: 0,
-      joined: new Date(),
-    };
-    console.log(database);
-    res.json(database.users[email]);
-  }
+  let hash = bcrypt.hashSync(password);
+  return knex.transaction(trx => {
+    return trx('users')
+        .returning('*')
+        .insert({name: name, email: email})
+        .then(data => {
+          knex('login')
+              .insert({hash: hash, email: email})
+              .then();
+          return data;
+        })
+        .then(data => res.json(data))
+        .then(trx.commit)
+        .catch(trx.rollback);
+  });
 });
 
 
 app.get('/profile/:userId', (req, res) => {
-  for (let [email, user] of Object.entries(database.users)) {
-    if (user.id === Number(req.params.userId)) {
-      res.json(user);
-      return 0;
-    }
-  }
-  res.status(404).json('No luck');
+  return knex('users')
+      .select('*')
+      .where({id: req.params.userId})
+      .then(user => {
+        if (user[0]) {
+          res.json(user[0])
+        } else {
+          res.status(404).json('No luck')
+        }
+      })
 });
 
 
 app.put('/image', (req, res) => {
-  let {email} = req.body;
-  if (!database.users.hasOwnProperty(email)) {
-    res.json('No such user!')
-  } else {
-    database.users[email].entries++;
-    res.json(database.users[email]);
-  }
+  let {id} = req.body;
+  return knex.transaction((trx) => {
+    return trx('users')
+        .where('id', '=', id)
+        .increment('entries', 1)
+        .returning('*')
+        .then(user => {
+          if (user[0]) {
+            res.json(user[0])
+          } else {
+            res.status(404).json('No luck')
+          }
+        })
+        .then(trx.commit)
+        .catch(trx.rollback);
+  });
 });
 
 
