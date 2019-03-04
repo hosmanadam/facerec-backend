@@ -27,4 +27,4 @@ INSERT INTO login
     (hash, email)
 VALUES
     ('$2a$10$0dQ8zYRzHST7j46L8v2Etufy5.A.ucHcEt7.ZL.pkq85/hM1z9FHe', 'adam@gmail.com'),
-    ('$2a$10$RrNMZWbqEU2IknQS3H.ds.XwkRpTfPNhVZFxaP34jhLZp3DJPK79i', 'sally@gmail.com')
+    ('$2a$10$RrNMZWbqEU2IknQS3H.ds.XwkRpTfPNhVZFxaP34jhLZp3DJPK79i', 'sally@gmail.com');
