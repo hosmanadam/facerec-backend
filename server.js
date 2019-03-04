@@ -5,12 +5,7 @@ const bcrypt = require('bcrypt-nodejs');
 const Clarifai = require('clarifai');
 const knex = require('knex')({
   client: 'pg',
-  connection: {
-    host : 'localhost',
-    user : 'adamhosman',
-    password : '',
-    database : 'facerec'
-  }
+  connection: process.env.DATABASE_URL
 });
 
 const controllers = require('./controllers');
