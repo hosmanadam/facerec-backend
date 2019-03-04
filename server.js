@@ -16,7 +16,7 @@ const knex = require('knex')({
 const controllers = require('./controllers');
 
 const app = express();
-const clarifaiApp = new Clarifai.App({apiKey: '0a6e9572400640b5ae84ff587db1436c'});
+const clarifaiApp = new Clarifai.App({apiKey: process.env.CLARIFAI_API_KEY});
 
 
 app.use(cors());
@@ -36,5 +36,5 @@ app.put('/image', controllers.handleImagePut(knex, clarifaiApp));
 
 
 
-const port = 3000;
-app.listen(port, () => console.log(`App is running on port ${port}`));
+const PORT = process.env.PORT;
+app.listen(PORT, () => console.log(`App is running on port ${PORT}`));
