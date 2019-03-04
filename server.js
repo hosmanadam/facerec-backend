@@ -16,6 +16,7 @@ const knex = require('knex')({
 const controllers = require('./controllers');
 
 const app = express();
+const clarifaiApp = new Clarifai.App({apiKey: '0a6e9572400640b5ae84ff587db1436c'});
 
 
 app.use(cors());
@@ -31,7 +32,7 @@ app.post('/register', controllers.handleRegisterPost(knex, bcrypt));
 
 app.get('/profile/:userId', controllers.handleProfileGet(knex));
 
-app.put('/image', controllers.handleImagePut(knex));
+app.put('/image', controllers.handleImagePut(knex, clarifaiApp));
 
 
 

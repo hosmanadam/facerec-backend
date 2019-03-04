@@ -57,23 +57,29 @@ const handleProfileGet = (knex) => (req, res) => {
 };
 
 
-const handleImagePut = (knex) => (req, res) => {
-  let {id} = req.body;
-  return knex.transaction((trx) => {
-    return trx('users')
-        .where('id', '=', id)
-        .increment('entries', 1)
-        .returning('*')
-        .then(user => {
-          if (user[0]) {
-            res.json(user[0])
-          } else {
-            res.status(404).json('No luck')
-          }
-        })
-        .then(trx.commit)
-        .catch(trx.rollback);
-  });
+const handleImagePut = (knex, clarifaiApp) => (req, res) => {
+  let {id} = req.body.user;
+  let {imageUrl} = req.body;
+
+  clarifaiApp.models.predict(Clarifai.FACE_DETECT_MODEL, imageUrl)
+      .then(clarifaiData => {
+        return knex.transaction((trx) => {
+          return trx('users')
+              .where('id', '=', id)
+              .increment('entries', 1)
+              .returning('*')
+              .then(user => {
+                if (user[0]) {
+                  res.json({user: user[0], clarifaiData: clarifaiData})
+                } else {
+                  res.status(404).json('No luck')
+                }
+              })
+              .then(trx.commit)
+              .catch(trx.rollback);
+        });
+      })
+      .catch(console.log);
 };
 
 
